@@ -1,10 +1,18 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import { RestApi } from 'aws-cdk-lib/aws-apigateway';
 
-export class AwsCdkMultiTenantApiExampleStack extends cdk.Stack {
+export class MultiTenantApiGatewayExampleStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+
+    const restApi = new RestApi(this, 'RestApi', {
+      cloudWatchRole: true,
+      deploy: false,
+    });
+
+    const testResource = restApi.root.addResource('test');
+    testResource.addMethod('GET'); // GET /items
 
     // The code that defines your stack goes here
 
