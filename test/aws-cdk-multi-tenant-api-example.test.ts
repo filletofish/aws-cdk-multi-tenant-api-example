@@ -5,13 +5,12 @@
 // example test. To run these tests, uncomment this file along with the
 // example resource in lib/aws-cdk-multi-tenant-api-example-stack.ts
 test('SQS Queue Created', () => {
-//   const app = new cdk.App();
-//     // WHEN
-//   const stack = new AwsCdkMultiTenantApiExample.AwsCdkMultiTenantApiExampleStack(app, 'MyTestStack');
-//     // THEN
-//   const template = Template.fromStack(stack);
-
-//   template.hasResourceProperties('AWS::SQS::Queue', {
-//     VisibilityTimeout: 300
-//   });
+  //   const app = new cdk.App();
+  //     // WHEN
+  //   const stack = new AwsCdkMultiTenantApiExample.AwsCdkMultiTenantApiExampleStack(app, 'MyTestStack');
+  //     // THEN
+  //   const template = Template.fromStack(stack);
+  //   template.hasResourceProperties('AWS::SQS::Queue', {
+  //     VisibilityTimeout: 300
+  //   });
 });
