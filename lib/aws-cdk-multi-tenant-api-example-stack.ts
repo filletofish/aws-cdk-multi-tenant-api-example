@@ -3,6 +3,20 @@ import { Construct } from 'constructs';
 import * as apigw from 'aws-cdk-lib/aws-apigateway';
 import * as lambda from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as logs from 'aws-cdk-lib/aws-logs';
+import * as iam from 'aws-cdk-lib/aws-iam';
+
+interface Client {
+  name: string;
+  awsAccounts: string[];
+}
+
+const apiClients: Client[] = [
+  {
+    name: 'payment-service',
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    awsAccounts: [process.env.CDK_DEFAULT_ACCOUNT!],
+  },
+];
 
 export class MultiTenantApiGatewayExampleStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -25,8 +39,28 @@ export class MultiTenantApiGatewayExampleStack extends cdk.Stack {
     });
 
     const resource = api.root.addResource('items');
-    resource.addMethod('GET', api.root.defaultIntegration, {
+    const getItemsMethod = resource.addMethod('GET', api.root.defaultIntegration, {
       authorizationType: apigw.AuthorizationType.IAM,
+    });
+
+    apiClients.forEach((apiClient) => {
+      const clientAccountPrincipals = apiClient.awsAccounts.map((acc) => new iam.AccountPrincipal(acc));
+      const role = new iam.Role(this, 'RestApiClient' + apiClient.name + 'Role', {
+        roleName: `rest-api-client-${apiClient.name}-role`,
+        assumedBy: new iam.CompositePrincipal(...clientAccountPrincipals),
+      });
+
+      role.attachInlinePolicy(
+        new iam.Policy(this, 'AllowInvokeApi', {
+          statements: [
+            new iam.PolicyStatement({
+              actions: ['execute-api:Invoke'],
+              effect: iam.Effect.ALLOW,
+              resources: [getItemsMethod.methodArn],
+            }),
+          ],
+        })
+      );
     });
   }
 

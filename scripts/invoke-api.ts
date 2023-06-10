@@ -1,17 +1,33 @@
 import { SignatureV4 } from '@aws-sdk/signature-v4';
-import { defaultProvider } from '@aws-sdk/credential-provider-node';
 import { HttpRequest } from '@aws-sdk/protocol-http';
 import { Sha256 } from '@aws-crypto/sha256-js';
 import { fetch } from 'cross-fetch';
+import * as AWS from 'aws-sdk';
 
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const region = process.env.CDK_DEFAULT_REGION!;
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+const account = process.env.CDK_DEFAULT_ACCOUNT!;
 
 const url = new URL('https://rdi3z6scy2.execute-api.eu-west-1.amazonaws.com/prod/items');
 
-const createSignerObj = (): SignatureV4 => {
+const createSignerObj = async (): Promise<SignatureV4> => {
+  const sts = new AWS.STS();
+  const assumeRoleResponse = await sts
+    .assumeRole({
+      RoleArn: `arn:aws:iam::${account}:role/rest-api-client-payment-service-role`,
+      RoleSessionName: 'AssumedRoleSession',
+    })
+    .promise();
+
+  const assumedCredentials = assumeRoleResponse.Credentials;
+
   return new SignatureV4({
-    credentials: defaultProvider(),
+    credentials: {
+      accessKeyId: assumedCredentials?.AccessKeyId || '',
+      secretAccessKey: assumedCredentials?.SecretAccessKey || '',
+      sessionToken: assumedCredentials?.SessionToken || '',
+    },
     service: 'execute-api',
     region: region,
     sha256: Sha256,
@@ -29,7 +45,9 @@ const sendSampleRequest = async () => {
     },
   });
 
-  const { headers, body, method } = await createSignerObj().sign(request);
+  const signer = await createSignerObj();
+
+  const { headers, body, method } = await signer.sign(request);
   const result = await fetch(url, {
     headers,
     body,

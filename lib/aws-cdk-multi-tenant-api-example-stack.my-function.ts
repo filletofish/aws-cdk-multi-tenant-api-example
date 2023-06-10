@@ -18,7 +18,7 @@ export const handler = async (event: APIGatewayEvent, context: Context): Promise
 };
 
 export const extractAWSAccountFromARN = (arn: string): string | null => {
-  const regex = /^arn:aws:iam::(\d+):.*$/;
+  const regex = /^arn:aws:[a-z-]+::(\d+):.*$/;
   const match = arn.match(regex);
   if (match && match.length === 2) {
     return match[1];

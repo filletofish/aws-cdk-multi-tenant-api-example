@@ -141,6 +141,54 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
     },
   },
   "Resources": {
+    "AllowInvokeApi0932B888": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "execute-api:Invoke",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Join": [
+                  "",
+                  [
+                    "arn:",
+                    {
+                      "Ref": "AWS::Partition",
+                    },
+                    ":execute-api:",
+                    {
+                      "Ref": "AWS::Region",
+                    },
+                    ":",
+                    {
+                      "Ref": "AWS::AccountId",
+                    },
+                    ":",
+                    {
+                      "Ref": "RestApi0C43BF4B",
+                    },
+                    "/",
+                    {
+                      "Ref": "RestApiDeploymentStageprod3855DE66",
+                    },
+                    "/GET/items",
+                  ],
+                ],
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "AllowInvokeApi0932B888",
+        "Roles": [
+          {
+            "Ref": "RestApiClientpaymentserviceRole52B31700",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
     "RestApi0C43BF4B": {
       "Properties": {
         "Name": "RestApi",
@@ -162,6 +210,35 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
       },
       "Type": "AWS::ApiGateway::Account",
       "UpdateReplacePolicy": "Retain",
+    },
+    "RestApiClientpaymentserviceRole52B31700": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":iam::507426004734:root",
+                    ],
+                  ],
+                },
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "RoleName": "rest-api-client-payment-service-role",
+      },
+      "Type": "AWS::IAM::Role",
     },
     "RestApiCloudWatchRoleE3ED6605": {
       "DeletionPolicy": "Retain",
