@@ -12,3 +12,11 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 * `cdk deploy`      deploy this stack to your default AWS account/region
 * `cdk diff`        compare deployed stack with current state
 * `cdk synth`       emits the synthesized CloudFormation template
+
+## Test API 
+
+Run script that signs requests with your local AWS credentials and sends test API request.
+
+```
+npx ts-node scripts/invoke-api.ts
+```
