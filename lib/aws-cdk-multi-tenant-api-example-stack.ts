@@ -1,24 +1,17 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import { RestApi } from 'aws-cdk-lib/aws-apigateway';
+import { LambdaRestApi } from 'aws-cdk-lib/aws-apigateway';
+import * as lambda from 'aws-cdk-lib/aws-lambda-nodejs';
 
 export class MultiTenantApiGatewayExampleStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const restApi = new RestApi(this, 'RestApi', {
+    const testFunction = new lambda.NodejsFunction(this, 'my-function');
+
+    new LambdaRestApi(this, 'RestApi', {
+      handler: testFunction,
       cloudWatchRole: true,
-      deploy: false,
     });
-
-    const testResource = restApi.root.addResource('test');
-    testResource.addMethod('GET'); // GET /items
-
-    // The code that defines your stack goes here
-
-    // example resource
-    // const queue = new sqs.Queue(this, 'AwsCdkMultiTenantApiExampleQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
   }
 }
