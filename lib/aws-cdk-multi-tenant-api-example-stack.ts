@@ -9,9 +9,13 @@ export class MultiTenantApiGatewayExampleStack extends cdk.Stack {
 
     const testFunction = new lambda.NodejsFunction(this, 'my-function');
 
-    new LambdaRestApi(this, 'RestApi', {
+    const api = new LambdaRestApi(this, 'RestApi', {
       handler: testFunction,
       cloudWatchRole: true,
+      proxy: false,
     });
+
+    const resource = api.root.addResource('items');
+    resource.addMethod('GET');
   }
 }
