@@ -214,6 +214,15 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
         "RestApiAccount7C83CF5A",
       ],
       "Properties": {
+        "AccessLogSetting": {
+          "DestinationArn": {
+            "Fn::GetAtt": [
+              "RestApiLogsF6F215CD",
+              "Arn",
+            ],
+          },
+          "Format": "{"requestId":"$context.requestId","extendedRequestId":"$context.extendedRequestId","apiId":"$context.apiId","resourceId":"$context.resourceId","domainName":"$context.domainName","stage":"$context.stage","path":"$context.path","resourcePath":"$context.resourcePath","httpMethod":"$context.httpMethod","protocol":"$context.protocol","accountId":"$context.identity.accountId","sourceIp":"$context.identity.sourceIp","user":"$context.identity.user","userAgent":"$context.identity.userAgent","userArn":"$context.identity.userArn","caller":"$context.identity.caller","cognitoIdentityId":"$context.identity.cognitoIdentityId","status":"$context.status","integration":{"status":"$context.integration.status","integrationStatus":"$context.integration.integrationStatus","error":"$context.integration.error","latency":"$context.integration.latency"},"error":{"responseType":"$context.error.responseType","message":"$context.error.message"},"requestTime":"$context.requestTime","responseLength":"$context.responseLength","responseLatency":"$context.responseLatency"}",
+        },
         "DeploymentId": {
           "Ref": "RestApiDeployment180EC503599bc867318d6e60be213ad921747dd1",
         },
@@ -223,6 +232,15 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
         "StageName": "prod",
       },
       "Type": "AWS::ApiGateway::Stage",
+    },
+    "RestApiLogsF6F215CD": {
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "LogGroupName": "example-rest-api-access-logs",
+        "RetentionInDays": 731,
+      },
+      "Type": "AWS::Logs::LogGroup",
+      "UpdateReplacePolicy": "Retain",
     },
     "RestApiitems0D5B6650": {
       "Properties": {
@@ -366,7 +384,7 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "db6e7c83d4dc8f092606e5c7f9252fd89a078d4dca57ef1c6f0754ba6fcc028b.zip",
+          "S3Key": "440b64ebfc461325fbc66a997fbe3f70ad0c8f5a85e264763ceb22fce2f6fc8b.zip",
         },
         "Environment": {
           "Variables": {
