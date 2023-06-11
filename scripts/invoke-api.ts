@@ -11,11 +11,14 @@ const account = process.env.CDK_DEFAULT_ACCOUNT!;
 
 const url = new URL('https://rdi3z6scy2.execute-api.eu-west-1.amazonaws.com/prod/items');
 
-const createSignerObj = async (): Promise<SignatureV4> => {
+const createSignerObj = async (clientName: string): Promise<SignatureV4> => {
+  const clientRoleArn = `arn:aws:iam::${account}:role/rest-api-client-${clientName}-role`;
+  console.log(`Assuming role ${clientRoleArn}.`);
+
   const sts = new AWS.STS();
   const assumeRoleResponse = await sts
     .assumeRole({
-      RoleArn: `arn:aws:iam::${account}:role/rest-api-client-payment-service-role`,
+      RoleArn: clientRoleArn,
       RoleSessionName: 'AssumedRoleSession',
     })
     .promise();
@@ -34,7 +37,7 @@ const createSignerObj = async (): Promise<SignatureV4> => {
   });
 };
 
-const sendSampleRequest = async () => {
+const sendSampleRequests = async (clientName: string) => {
   const request = new HttpRequest({
     hostname: url.hostname,
     path: url.pathname,
@@ -45,21 +48,28 @@ const sendSampleRequest = async () => {
     },
   });
 
-  const signer = await createSignerObj();
+  const signer = await createSignerObj(clientName);
 
   const { headers, body, method } = await signer.sign(request);
-  const result = await fetch(url, {
-    headers,
-    body,
-    method,
+
+  const numberOfRequests = 10;
+  console.log(`Sending ${numberOfRequests} of requests to api.`);
+
+  [...Array(numberOfRequests)].forEach(async (_, i) => {
+    const result = await fetch(url, {
+      headers,
+      body,
+      method,
+    });
+
+    if (!result.ok) {
+      console.error(`Client ${clientName} request ${i}: failed with error: ${JSON.stringify(await result.json())}`);
+      return;
+    }
+
+    console.log(`Client ${clientName} request ${i} succeeded with reply: ${JSON.stringify(await result.json())}`);
   });
-
-  if (!result.ok) {
-    console.error(result);
-    return;
-  }
-
-  console.log(await result.json());
 };
 
-sendSampleRequest();
+sendSampleRequests('payment-service');
+sendSampleRequests('order-service');
