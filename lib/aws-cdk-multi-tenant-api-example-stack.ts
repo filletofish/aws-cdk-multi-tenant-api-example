@@ -10,6 +10,8 @@ import * as logsd from 'aws-cdk-lib/aws-logs-destinations';
 interface Client {
   name: string;
   awsAccounts: string[];
+  rateLimit: number;
+  burstLimit: number;
 }
 
 const apiClients: Client[] = [
@@ -17,11 +19,15 @@ const apiClients: Client[] = [
     name: 'payment-service',
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     awsAccounts: [process.env.CDK_DEFAULT_ACCOUNT!],
+    rateLimit: 10,
+    burstLimit: 2,
   },
   {
     name: 'order-service',
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     awsAccounts: [process.env.CDK_DEFAULT_ACCOUNT!],
+    rateLimit: 1,
+    burstLimit: 1,
   },
 ];
 
@@ -51,6 +57,7 @@ export class MultiTenantApiGatewayExampleStack extends cdk.Stack {
     const resource = api.root.addResource('items');
     const getItemsMethod = resource.addMethod('GET', api.root.defaultIntegration, {
       authorizationType: apigw.AuthorizationType.IAM,
+      apiKeyRequired: true,
     });
 
     const allowInvokeApiPolicy = new iam.Policy(this, 'AllowInvokeApi', {
@@ -69,8 +76,25 @@ export class MultiTenantApiGatewayExampleStack extends cdk.Stack {
         roleName: `rest-api-client-${apiClient.name}-role`,
         assumedBy: new iam.CompositePrincipal(...clientAccountPrincipals),
       });
-
       role.attachInlinePolicy(allowInvokeApiPolicy);
+
+      const plan = api.addUsagePlan('RestApiUsagePlan-' + apiClient.name, {
+        name: apiClient.name + '-plan',
+        throttle: {
+          rateLimit: apiClient.rateLimit,
+          burstLimit: apiClient.burstLimit,
+        },
+      });
+
+      plan.addApiStage({
+        stage: api.deploymentStage,
+      });
+
+      const key = api.addApiKey('ApiKey-' + apiClient.name, {
+        apiKeyName: `key-${apiClient.name}`,
+        value: `api-key-${apiClient.name}`,
+      });
+      plan.addApiKey(key);
     });
   }
 

@@ -45,6 +45,7 @@ const sendSampleRequests = async (clientName: string) => {
     headers: {
       'Content-Type': 'application/json',
       host: url.hostname,
+      'x-api-key': `api-key-${clientName}`, // API key header equals to api client name
     },
   });
 
@@ -52,7 +53,7 @@ const sendSampleRequests = async (clientName: string) => {
 
   const { headers, body, method } = await signer.sign(request);
 
-  const numberOfRequests = 10;
+  const numberOfRequests = 20;
   console.log(`Sending ${numberOfRequests} of requests to api.`);
 
   [...Array(numberOfRequests)].forEach(async (_, i) => {

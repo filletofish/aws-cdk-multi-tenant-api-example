@@ -313,6 +313,42 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
       "Type": "AWS::ApiGateway::Account",
       "UpdateReplacePolicy": "Retain",
     },
+    "RestApiApiKeyorderservice4E49F637": {
+      "Properties": {
+        "Enabled": true,
+        "Name": "key-order-service",
+        "StageKeys": [
+          {
+            "RestApiId": {
+              "Ref": "RestApi0C43BF4B",
+            },
+            "StageName": {
+              "Ref": "RestApiDeploymentStageprod3855DE66",
+            },
+          },
+        ],
+        "Value": "api-key-order-service",
+      },
+      "Type": "AWS::ApiGateway::ApiKey",
+    },
+    "RestApiApiKeypaymentservice6AC794A0": {
+      "Properties": {
+        "Enabled": true,
+        "Name": "key-payment-service",
+        "StageKeys": [
+          {
+            "RestApiId": {
+              "Ref": "RestApi0C43BF4B",
+            },
+            "StageName": {
+              "Ref": "RestApiDeploymentStageprod3855DE66",
+            },
+          },
+        ],
+        "Value": "api-key-payment-service",
+      },
+      "Type": "AWS::ApiGateway::ApiKey",
+    },
     "RestApiClientorderserviceRole55737A55": {
       "Properties": {
         "AssumeRolePolicyDocument": {
@@ -435,7 +471,7 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
       },
       "Type": "AWS::Logs::MetricFilter",
     },
-    "RestApiDeployment180EC503599bc867318d6e60be213ad921747dd1": {
+    "RestApiDeployment180EC50352392329d9dcb968259bf26270fc6e77": {
       "DependsOn": [
         "RestApiitemsGET2AAECCB8",
         "RestApiitems0D5B6650",
@@ -463,7 +499,7 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
           "Format": "{"requestId":"$context.requestId","extendedRequestId":"$context.extendedRequestId","apiId":"$context.apiId","resourceId":"$context.resourceId","domainName":"$context.domainName","stage":"$context.stage","path":"$context.path","resourcePath":"$context.resourcePath","httpMethod":"$context.httpMethod","protocol":"$context.protocol","accountId":"$context.identity.accountId","sourceIp":"$context.identity.sourceIp","user":"$context.identity.user","userAgent":"$context.identity.userAgent","userArn":"$context.identity.userArn","caller":"$context.identity.caller","cognitoIdentityId":"$context.identity.cognitoIdentityId","status":"$context.status","integration":{"status":"$context.integration.status","integrationStatus":"$context.integration.integrationStatus","error":"$context.integration.error","latency":"$context.integration.latency"},"error":{"responseType":"$context.error.responseType","message":"$context.error.message"},"requestTime":"$context.requestTime","responseLength":"$context.responseLength","responseLatency":"$context.responseLatency"}",
         },
         "DeploymentId": {
-          "Ref": "RestApiDeployment180EC503599bc867318d6e60be213ad921747dd1",
+          "Ref": "RestApiDeployment180EC50352392329d9dcb968259bf26270fc6e77",
         },
         "RestApiId": {
           "Ref": "RestApi0C43BF4B",
@@ -512,6 +548,72 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
       "Type": "AWS::Logs::LogGroup",
       "UpdateReplacePolicy": "Retain",
     },
+    "RestApiRestApiUsagePlanorderserviceABD34704": {
+      "Properties": {
+        "ApiStages": [
+          {
+            "ApiId": {
+              "Ref": "RestApi0C43BF4B",
+            },
+            "Stage": {
+              "Ref": "RestApiDeploymentStageprod3855DE66",
+            },
+            "Throttle": {},
+          },
+        ],
+        "Throttle": {
+          "BurstLimit": 1,
+          "RateLimit": 1,
+        },
+        "UsagePlanName": "order-service-plan",
+      },
+      "Type": "AWS::ApiGateway::UsagePlan",
+    },
+    "RestApiRestApiUsagePlanorderserviceUsagePlanKeyResourceMyTestStackRestApiApiKeyorderservice0A6E2DE28A1C3AAF": {
+      "Properties": {
+        "KeyId": {
+          "Ref": "RestApiApiKeyorderservice4E49F637",
+        },
+        "KeyType": "API_KEY",
+        "UsagePlanId": {
+          "Ref": "RestApiRestApiUsagePlanorderserviceABD34704",
+        },
+      },
+      "Type": "AWS::ApiGateway::UsagePlanKey",
+    },
+    "RestApiRestApiUsagePlanpaymentservice2729F7D0": {
+      "Properties": {
+        "ApiStages": [
+          {
+            "ApiId": {
+              "Ref": "RestApi0C43BF4B",
+            },
+            "Stage": {
+              "Ref": "RestApiDeploymentStageprod3855DE66",
+            },
+            "Throttle": {},
+          },
+        ],
+        "Throttle": {
+          "BurstLimit": 2,
+          "RateLimit": 10,
+        },
+        "UsagePlanName": "payment-service-plan",
+      },
+      "Type": "AWS::ApiGateway::UsagePlan",
+    },
+    "RestApiRestApiUsagePlanpaymentserviceUsagePlanKeyResourceMyTestStackRestApiApiKeypaymentservice3EF2C9B38D8B4B85": {
+      "Properties": {
+        "KeyId": {
+          "Ref": "RestApiApiKeypaymentservice6AC794A0",
+        },
+        "KeyType": "API_KEY",
+        "UsagePlanId": {
+          "Ref": "RestApiRestApiUsagePlanpaymentservice2729F7D0",
+        },
+      },
+      "Type": "AWS::ApiGateway::UsagePlanKey",
+    },
     "RestApiitems0D5B6650": {
       "Properties": {
         "ParentId": {
@@ -529,6 +631,7 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
     },
     "RestApiitemsGET2AAECCB8": {
       "Properties": {
+        "ApiKeyRequired": true,
         "AuthorizationType": "AWS_IAM",
         "HttpMethod": "GET",
         "Integration": {
@@ -720,7 +823,7 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "a92c568fb8ea0d78ab85307154e6375b60c8d5e72c877b0d4e93c59c6412c2cd.zip",
+          "S3Key": "e0168a9a1a1a393e7c67579136791cd32761a216566b7dcf6d833c3ee321594e.zip",
         },
         "Environment": {
           "Variables": {

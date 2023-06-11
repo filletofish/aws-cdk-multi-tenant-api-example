@@ -8,12 +8,6 @@ export const handler = async (event: APIGatewayEvent, context: Context): Promise
   const callerArn = event.requestContext.identity.userArn!;
   console.log(`Caller AWS ARN: ${callerArn}`);
 
-  // Randomly throwing an error to demo how errors are handled in metrics / access logs
-  const randomNumber = Math.random();
-  if (randomNumber < 0.5) {
-    throw new Error('Random internal error occurred!');
-  }
-
   const callerAwsAccount = extractAWSAccountFromARN(callerArn);
   return {
     statusCode: 200,
