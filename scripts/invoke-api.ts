@@ -9,10 +9,35 @@ const region = process.env.CDK_DEFAULT_REGION!;
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const account = process.env.CDK_DEFAULT_ACCOUNT!;
 
-const url = new URL('https://rdi3z6scy2.execute-api.eu-west-1.amazonaws.com/prod/items');
+const apiEndpointCfnExportName = 'MultiTenantApiEndpoint';
+const stackName = 'MultiTenantApiExampleStack';
+
+async function getApiGatewayEndpoint(stackName: string): Promise<string> {
+  let apiGatewayOutput: string | undefined;
+
+  const cloudFormation = new AWS.CloudFormation({
+    region: region,
+  });
+  const stackResponse = await cloudFormation.describeStacks({ StackName: stackName }).promise();
+
+  if (stackResponse.Stacks && stackResponse.Stacks.length > 0) {
+    const stack = stackResponse.Stacks[0];
+
+    // Find the output with the logical ID of your API Gateway endpoint
+    apiGatewayOutput = stack.Outputs?.find((output) => output.ExportName === apiEndpointCfnExportName)?.OutputValue;
+  }
+
+  if (!apiGatewayOutput) {
+    throw Error(
+      `Couldn't find CFN export with name ${apiEndpointCfnExportName}. Make sure that the stack is deployed and has expected CFN Export.`
+    );
+  }
+
+  return apiGatewayOutput;
+}
 
 const createSignerObj = async (clientName: string): Promise<SignatureV4> => {
-  const clientRoleArn = `arn:aws:iam::${account}:role/rest-api-client-${clientName}-role`;
+  const clientRoleArn = `arn:aws:iam::${account}:role/MultiTenantApiClient-${clientName}-role`;
   console.log(`Assuming role ${clientRoleArn}.`);
 
   const sts = new AWS.STS();
@@ -38,6 +63,9 @@ const createSignerObj = async (clientName: string): Promise<SignatureV4> => {
 };
 
 const sendSampleRequests = async (clientName: string) => {
+  const apiEndpoint = await getApiGatewayEndpoint(stackName);
+  const url = new URL(apiEndpoint + '/items');
+
   const request = new HttpRequest({
     hostname: url.hostname,
     path: url.pathname,

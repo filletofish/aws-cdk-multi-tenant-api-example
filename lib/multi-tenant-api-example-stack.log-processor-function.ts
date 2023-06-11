@@ -4,8 +4,8 @@ import * as zlib from 'zlib';
 import { MetricResolution, Metrics, MetricUnits } from '@aws-lambda-powertools/metrics';
 
 const metrics = new Metrics({
-  namespace: 'MultiTenantExampleRestApi',
-  serviceName: 'multi-tenant-example-api',
+  namespace: 'MultiTenantApi',
+  serviceName: 'multi-tenant-api',
 });
 
 interface ApiAccessLogEvent {
@@ -69,7 +69,7 @@ function publishCustomMetricForAccessLogEvent(accessLogEvent: ApiAccessLogEvent)
   }
 }
 
-const CLIENT_ROLE_ARN_REGEX = /^arn:aws:sts::\d+:assumed-role\/rest-api-client-(.+)-role\/\w+$/;
+const CLIENT_ROLE_ARN_REGEX = /^arn:aws:sts::\d+:assumed-role\/MultiTenantApiClient-(.+)-role\/\w+$/;
 
 function isValidARN(value: string): boolean {
   const regex = CLIENT_ROLE_ARN_REGEX;

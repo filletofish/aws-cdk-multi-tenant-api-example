@@ -107,6 +107,9 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
   },
   "Outputs": {
     "RestApiEndpoint0551178A": {
+      "Export": {
+        "Name": "MultiTenantApiEndpoint",
+      },
       "Value": {
         "Fn::Join": [
           "",
@@ -183,18 +186,200 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
         "PolicyName": "AllowInvokeApi0932B888",
         "Roles": [
           {
-            "Ref": "RestApiClientpaymentserviceRole52B31700",
+            "Ref": "MultiTenantApiClientpaymentserviceRole8C9A53BF",
           },
           {
-            "Ref": "RestApiClientorderserviceRole55737A55",
+            "Ref": "MultiTenantApiClientorderserviceRole64EC7B85",
           },
         ],
       },
       "Type": "AWS::IAM::Policy",
     },
-    "LogSubscriptionFilter4C618026": {
+    "MultiTenantApi4XXErrorMetricFilterFF1BC466": {
+      "Properties": {
+        "FilterPattern": "{ ($.status = 4**) && ($.userArn = "*") }",
+        "LogGroupName": {
+          "Ref": "RestApiLogsF6F215CD",
+        },
+        "MetricTransformations": [
+          {
+            "Dimensions": [
+              {
+                "Key": "client",
+                "Value": "$.userArn",
+              },
+              {
+                "Key": "method",
+                "Value": "$.httpMethod",
+              },
+              {
+                "Key": "path",
+                "Value": "$.path",
+              },
+            ],
+            "MetricName": "4XXError",
+            "MetricNamespace": "MultiTenantApiMetricFilter",
+            "MetricValue": "1",
+            "Unit": "Count",
+          },
+        ],
+      },
+      "Type": "AWS::Logs::MetricFilter",
+    },
+    "MultiTenantApi5XXErrorMetricFilter79EB0F2E": {
+      "Properties": {
+        "FilterPattern": "{ ($.status = 5**) && ($.userArn = "*") }",
+        "LogGroupName": {
+          "Ref": "RestApiLogsF6F215CD",
+        },
+        "MetricTransformations": [
+          {
+            "Dimensions": [
+              {
+                "Key": "client",
+                "Value": "$.userArn",
+              },
+              {
+                "Key": "method",
+                "Value": "$.httpMethod",
+              },
+              {
+                "Key": "path",
+                "Value": "$.path",
+              },
+            ],
+            "MetricName": "5XXError",
+            "MetricNamespace": "MultiTenantApiMetricFilter",
+            "MetricValue": "1",
+            "Unit": "Count",
+          },
+        ],
+      },
+      "Type": "AWS::Logs::MetricFilter",
+    },
+    "MultiTenantApiClientorderserviceRole64EC7B85": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":iam::507426004734:root",
+                    ],
+                  ],
+                },
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "RoleName": "MultiTenantApiClient-order-service-role",
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "MultiTenantApiClientpaymentserviceRole8C9A53BF": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":iam::507426004734:root",
+                    ],
+                  ],
+                },
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "RoleName": "MultiTenantApiClient-payment-service-role",
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "MultiTenantApiCountMetricFilter05F4BE91": {
+      "Properties": {
+        "FilterPattern": "{ $.userArn = "*" }",
+        "LogGroupName": {
+          "Ref": "RestApiLogsF6F215CD",
+        },
+        "MetricTransformations": [
+          {
+            "Dimensions": [
+              {
+                "Key": "client",
+                "Value": "$.userArn",
+              },
+              {
+                "Key": "method",
+                "Value": "$.httpMethod",
+              },
+              {
+                "Key": "path",
+                "Value": "$.path",
+              },
+            ],
+            "MetricName": "Count",
+            "MetricNamespace": "MultiTenantApiMetricFilter",
+            "MetricValue": "1",
+            "Unit": "Count",
+          },
+        ],
+      },
+      "Type": "AWS::Logs::MetricFilter",
+    },
+    "MultiTenantApiLatencyMetricFilter649EA399": {
+      "Properties": {
+        "FilterPattern": "{ $.userArn = "*" }",
+        "LogGroupName": {
+          "Ref": "RestApiLogsF6F215CD",
+        },
+        "MetricTransformations": [
+          {
+            "Dimensions": [
+              {
+                "Key": "client",
+                "Value": "$.userArn",
+              },
+              {
+                "Key": "method",
+                "Value": "$.httpMethod",
+              },
+              {
+                "Key": "path",
+                "Value": "$.path",
+              },
+            ],
+            "MetricName": "Latency",
+            "MetricNamespace": "MultiTenantApiMetricFilter",
+            "MetricValue": "$.responseLatency",
+            "Unit": "Milliseconds",
+          },
+        ],
+      },
+      "Type": "AWS::Logs::MetricFilter",
+    },
+    "MultiTenantApiLogSubscriptionFilter3B9A4229": {
       "DependsOn": [
-        "LogSubscriptionFilterCanInvokeLambdaD601FB53",
+        "MultiTenantApiLogSubscriptionFilterCanInvokeLambdaFFC42DD4",
       ],
       "Properties": {
         "DestinationArn": {
@@ -210,7 +395,7 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
       },
       "Type": "AWS::Logs::SubscriptionFilter",
     },
-    "LogSubscriptionFilterCanInvokeLambdaD601FB53": {
+    "MultiTenantApiLogSubscriptionFilterCanInvokeLambdaFFC42DD4": {
       "Properties": {
         "Action": "lambda:InvokeFunction",
         "FunctionName": {
@@ -235,68 +420,6 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
       },
       "Type": "AWS::ApiGateway::RestApi",
     },
-    "RestApi4XXErrorMetricFilter9745B720": {
-      "Properties": {
-        "FilterPattern": "{ ($.status = 4**) && ($.userArn = "*") }",
-        "LogGroupName": {
-          "Ref": "RestApiLogsF6F215CD",
-        },
-        "MetricTransformations": [
-          {
-            "Dimensions": [
-              {
-                "Key": "client",
-                "Value": "$.userArn",
-              },
-              {
-                "Key": "method",
-                "Value": "$.httpMethod",
-              },
-              {
-                "Key": "path",
-                "Value": "$.path",
-              },
-            ],
-            "MetricName": "4XXError",
-            "MetricNamespace": "RestApiMetricFilter",
-            "MetricValue": "1",
-            "Unit": "Count",
-          },
-        ],
-      },
-      "Type": "AWS::Logs::MetricFilter",
-    },
-    "RestApi5XXErrorMetricFilter08746CF7": {
-      "Properties": {
-        "FilterPattern": "{ ($.status = 5**) && ($.userArn = "*") }",
-        "LogGroupName": {
-          "Ref": "RestApiLogsF6F215CD",
-        },
-        "MetricTransformations": [
-          {
-            "Dimensions": [
-              {
-                "Key": "client",
-                "Value": "$.userArn",
-              },
-              {
-                "Key": "method",
-                "Value": "$.httpMethod",
-              },
-              {
-                "Key": "path",
-                "Value": "$.path",
-              },
-            ],
-            "MetricName": "5XXError",
-            "MetricNamespace": "RestApiMetricFilter",
-            "MetricValue": "1",
-            "Unit": "Count",
-          },
-        ],
-      },
-      "Type": "AWS::Logs::MetricFilter",
-    },
     "RestApiAccount7C83CF5A": {
       "DeletionPolicy": "Retain",
       "DependsOn": [
@@ -312,100 +435,6 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
       },
       "Type": "AWS::ApiGateway::Account",
       "UpdateReplacePolicy": "Retain",
-    },
-    "RestApiApiKeyorderservice4E49F637": {
-      "Properties": {
-        "Enabled": true,
-        "Name": "key-order-service",
-        "StageKeys": [
-          {
-            "RestApiId": {
-              "Ref": "RestApi0C43BF4B",
-            },
-            "StageName": {
-              "Ref": "RestApiDeploymentStageprod3855DE66",
-            },
-          },
-        ],
-        "Value": "api-key-order-service",
-      },
-      "Type": "AWS::ApiGateway::ApiKey",
-    },
-    "RestApiApiKeypaymentservice6AC794A0": {
-      "Properties": {
-        "Enabled": true,
-        "Name": "key-payment-service",
-        "StageKeys": [
-          {
-            "RestApiId": {
-              "Ref": "RestApi0C43BF4B",
-            },
-            "StageName": {
-              "Ref": "RestApiDeploymentStageprod3855DE66",
-            },
-          },
-        ],
-        "Value": "api-key-payment-service",
-      },
-      "Type": "AWS::ApiGateway::ApiKey",
-    },
-    "RestApiClientorderserviceRole55737A55": {
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": "sts:AssumeRole",
-              "Effect": "Allow",
-              "Principal": {
-                "AWS": {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:",
-                      {
-                        "Ref": "AWS::Partition",
-                      },
-                      ":iam::507426004734:root",
-                    ],
-                  ],
-                },
-              },
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "RoleName": "rest-api-client-order-service-role",
-      },
-      "Type": "AWS::IAM::Role",
-    },
-    "RestApiClientpaymentserviceRole52B31700": {
-      "Properties": {
-        "AssumeRolePolicyDocument": {
-          "Statement": [
-            {
-              "Action": "sts:AssumeRole",
-              "Effect": "Allow",
-              "Principal": {
-                "AWS": {
-                  "Fn::Join": [
-                    "",
-                    [
-                      "arn:",
-                      {
-                        "Ref": "AWS::Partition",
-                      },
-                      ":iam::507426004734:root",
-                    ],
-                  ],
-                },
-              },
-            },
-          ],
-          "Version": "2012-10-17",
-        },
-        "RoleName": "rest-api-client-payment-service-role",
-      },
-      "Type": "AWS::IAM::Role",
     },
     "RestApiCloudWatchRoleE3ED6605": {
       "DeletionPolicy": "Retain",
@@ -440,38 +469,7 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
       "Type": "AWS::IAM::Role",
       "UpdateReplacePolicy": "Retain",
     },
-    "RestApiCountMetricFilterF4480ECD": {
-      "Properties": {
-        "FilterPattern": "{ $.userArn = "*" }",
-        "LogGroupName": {
-          "Ref": "RestApiLogsF6F215CD",
-        },
-        "MetricTransformations": [
-          {
-            "Dimensions": [
-              {
-                "Key": "client",
-                "Value": "$.userArn",
-              },
-              {
-                "Key": "method",
-                "Value": "$.httpMethod",
-              },
-              {
-                "Key": "path",
-                "Value": "$.path",
-              },
-            ],
-            "MetricName": "Count",
-            "MetricNamespace": "RestApiMetricFilter",
-            "MetricValue": "1",
-            "Unit": "Count",
-          },
-        ],
-      },
-      "Type": "AWS::Logs::MetricFilter",
-    },
-    "RestApiDeployment180EC50352392329d9dcb968259bf26270fc6e77": {
+    "RestApiDeployment180EC503a85070d3ca5abe8e9ca3a5cddfb92276": {
       "DependsOn": [
         "RestApiitemsGET2AAECCB8",
         "RestApiitems0D5B6650",
@@ -499,7 +497,7 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
           "Format": "{"requestId":"$context.requestId","extendedRequestId":"$context.extendedRequestId","apiId":"$context.apiId","resourceId":"$context.resourceId","domainName":"$context.domainName","stage":"$context.stage","path":"$context.path","resourcePath":"$context.resourcePath","httpMethod":"$context.httpMethod","protocol":"$context.protocol","accountId":"$context.identity.accountId","sourceIp":"$context.identity.sourceIp","user":"$context.identity.user","userAgent":"$context.identity.userAgent","userArn":"$context.identity.userArn","caller":"$context.identity.caller","cognitoIdentityId":"$context.identity.cognitoIdentityId","status":"$context.status","integration":{"status":"$context.integration.status","integrationStatus":"$context.integration.integrationStatus","error":"$context.integration.error","latency":"$context.integration.latency"},"error":{"responseType":"$context.error.responseType","message":"$context.error.message"},"requestTime":"$context.requestTime","responseLength":"$context.responseLength","responseLatency":"$context.responseLatency"}",
         },
         "DeploymentId": {
-          "Ref": "RestApiDeployment180EC50352392329d9dcb968259bf26270fc6e77",
+          "Ref": "RestApiDeployment180EC503a85070d3ca5abe8e9ca3a5cddfb92276",
         },
         "RestApiId": {
           "Ref": "RestApi0C43BF4B",
@@ -508,47 +506,52 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
       },
       "Type": "AWS::ApiGateway::Stage",
     },
-    "RestApiLatencyMetricFilter5BECBDC1": {
-      "Properties": {
-        "FilterPattern": "{ $.userArn = "*" }",
-        "LogGroupName": {
-          "Ref": "RestApiLogsF6F215CD",
-        },
-        "MetricTransformations": [
-          {
-            "Dimensions": [
-              {
-                "Key": "client",
-                "Value": "$.userArn",
-              },
-              {
-                "Key": "method",
-                "Value": "$.httpMethod",
-              },
-              {
-                "Key": "path",
-                "Value": "$.path",
-              },
-            ],
-            "MetricName": "Latency",
-            "MetricNamespace": "RestApiMetricFilter",
-            "MetricValue": "$.responseLatency",
-            "Unit": "Milliseconds",
-          },
-        ],
-      },
-      "Type": "AWS::Logs::MetricFilter",
-    },
     "RestApiLogsF6F215CD": {
       "DeletionPolicy": "Retain",
       "Properties": {
-        "LogGroupName": "example-rest-api-access-logs",
+        "LogGroupName": "multi-tenant-api-access-logs",
         "RetentionInDays": 731,
       },
       "Type": "AWS::Logs::LogGroup",
       "UpdateReplacePolicy": "Retain",
     },
-    "RestApiRestApiUsagePlanorderserviceABD34704": {
+    "RestApiMultiTenantApiKeyorderservice0694BC0D": {
+      "Properties": {
+        "Enabled": true,
+        "Name": "key-order-service",
+        "StageKeys": [
+          {
+            "RestApiId": {
+              "Ref": "RestApi0C43BF4B",
+            },
+            "StageName": {
+              "Ref": "RestApiDeploymentStageprod3855DE66",
+            },
+          },
+        ],
+        "Value": "api-key-order-service",
+      },
+      "Type": "AWS::ApiGateway::ApiKey",
+    },
+    "RestApiMultiTenantApiKeypaymentservice4EF62FAC": {
+      "Properties": {
+        "Enabled": true,
+        "Name": "key-payment-service",
+        "StageKeys": [
+          {
+            "RestApiId": {
+              "Ref": "RestApi0C43BF4B",
+            },
+            "StageName": {
+              "Ref": "RestApiDeploymentStageprod3855DE66",
+            },
+          },
+        ],
+        "Value": "api-key-payment-service",
+      },
+      "Type": "AWS::ApiGateway::ApiKey",
+    },
+    "RestApiMultiTenantApiUsagePlanorderservice256787BD": {
       "Properties": {
         "ApiStages": [
           {
@@ -569,19 +572,19 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
       },
       "Type": "AWS::ApiGateway::UsagePlan",
     },
-    "RestApiRestApiUsagePlanorderserviceUsagePlanKeyResourceMyTestStackRestApiApiKeyorderservice0A6E2DE28A1C3AAF": {
+    "RestApiMultiTenantApiUsagePlanorderserviceUsagePlanKeyResourceMyTestStackRestApiMultiTenantApiKeyorderservice8C8FEC60CB12C1E3": {
       "Properties": {
         "KeyId": {
-          "Ref": "RestApiApiKeyorderservice4E49F637",
+          "Ref": "RestApiMultiTenantApiKeyorderservice0694BC0D",
         },
         "KeyType": "API_KEY",
         "UsagePlanId": {
-          "Ref": "RestApiRestApiUsagePlanorderserviceABD34704",
+          "Ref": "RestApiMultiTenantApiUsagePlanorderservice256787BD",
         },
       },
       "Type": "AWS::ApiGateway::UsagePlanKey",
     },
-    "RestApiRestApiUsagePlanpaymentservice2729F7D0": {
+    "RestApiMultiTenantApiUsagePlanpaymentservice361DB09C": {
       "Properties": {
         "ApiStages": [
           {
@@ -602,14 +605,14 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
       },
       "Type": "AWS::ApiGateway::UsagePlan",
     },
-    "RestApiRestApiUsagePlanpaymentserviceUsagePlanKeyResourceMyTestStackRestApiApiKeypaymentservice3EF2C9B38D8B4B85": {
+    "RestApiMultiTenantApiUsagePlanpaymentserviceUsagePlanKeyResourceMyTestStackRestApiMultiTenantApiKeypaymentservice4201D28AB6198121": {
       "Properties": {
         "KeyId": {
-          "Ref": "RestApiApiKeypaymentservice6AC794A0",
+          "Ref": "RestApiMultiTenantApiKeypaymentservice4EF62FAC",
         },
         "KeyType": "API_KEY",
         "UsagePlanId": {
-          "Ref": "RestApiRestApiUsagePlanpaymentservice2729F7D0",
+          "Ref": "RestApiMultiTenantApiUsagePlanpaymentservice361DB09C",
         },
       },
       "Type": "AWS::ApiGateway::UsagePlanKey",
@@ -652,7 +655,7 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
                 ":lambda:path/2015-03-31/functions/",
                 {
                   "Fn::GetAtt": [
-                    "myfunctionDF753486",
+                    "apifunction06E4C28F",
                     "Arn",
                   ],
                 },
@@ -675,7 +678,7 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
         "Action": "lambda:InvokeFunction",
         "FunctionName": {
           "Fn::GetAtt": [
-            "myfunctionDF753486",
+            "apifunction06E4C28F",
             "Arn",
           ],
         },
@@ -716,7 +719,7 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
         "Action": "lambda:InvokeFunction",
         "FunctionName": {
           "Fn::GetAtt": [
-            "myfunctionDF753486",
+            "apifunction06E4C28F",
             "Arn",
           ],
         },
@@ -748,26 +751,27 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
       },
       "Type": "AWS::Lambda::Permission",
     },
-    "logprocessorfunction886DCE96": {
+    "apifunction06E4C28F": {
       "DependsOn": [
-        "logprocessorfunctionServiceRole68C22A68",
+        "apifunctionServiceRole18CE71BD",
       ],
       "Properties": {
         "Code": {
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "11bf43c82aff35a67cd09ccc2dcd622a484b4615bb40aff46dcb9e8d017721ba.zip",
+          "S3Key": "533127396ad7d09839fe358151855ee4303c5c7ea4a4cfea4dac0d8335def815.zip",
         },
         "Environment": {
           "Variables": {
             "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
           },
         },
+        "FunctionName": "multi-tenant-api-function",
         "Handler": "index.handler",
         "Role": {
           "Fn::GetAtt": [
-            "logprocessorfunctionServiceRole68C22A68",
+            "apifunctionServiceRole18CE71BD",
             "Arn",
           ],
         },
@@ -783,7 +787,7 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
       },
       "Type": "AWS::Lambda::Function",
     },
-    "logprocessorfunctionServiceRole68C22A68": {
+    "apifunctionServiceRole18CE71BD": {
       "Properties": {
         "AssumeRolePolicyDocument": {
           "Statement": [
@@ -814,16 +818,16 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
       },
       "Type": "AWS::IAM::Role",
     },
-    "myfunctionDF753486": {
+    "logprocessorfunction886DCE96": {
       "DependsOn": [
-        "myfunctionServiceRole41691664",
+        "logprocessorfunctionServiceRole68C22A68",
       ],
       "Properties": {
         "Code": {
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "e0168a9a1a1a393e7c67579136791cd32761a216566b7dcf6d833c3ee321594e.zip",
+          "S3Key": "022d62d47516d6254a5ac9abd56aafa3da30e5f5dbf44dd4588b8dfd47af06ed.zip",
         },
         "Environment": {
           "Variables": {
@@ -833,7 +837,7 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
         "Handler": "index.handler",
         "Role": {
           "Fn::GetAtt": [
-            "myfunctionServiceRole41691664",
+            "logprocessorfunctionServiceRole68C22A68",
             "Arn",
           ],
         },
@@ -849,7 +853,7 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
       },
       "Type": "AWS::Lambda::Function",
     },
-    "myfunctionServiceRole41691664": {
+    "logprocessorfunctionServiceRole68C22A68": {
       "Properties": {
         "AssumeRolePolicyDocument": {
           "Statement": [

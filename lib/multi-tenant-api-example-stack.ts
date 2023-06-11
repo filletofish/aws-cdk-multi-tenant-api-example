@@ -7,14 +7,14 @@ import * as iam from 'aws-cdk-lib/aws-iam';
 import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
 import * as logsd from 'aws-cdk-lib/aws-logs-destinations';
 
-interface Client {
+interface ApiClientConfig {
   name: string;
   awsAccounts: string[];
   rateLimit: number;
   burstLimit: number;
 }
 
-const apiClients: Client[] = [
+const apiClients: ApiClientConfig[] = [
   {
     name: 'payment-service',
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -31,24 +31,27 @@ const apiClients: Client[] = [
   },
 ];
 
-export class MultiTenantApiGatewayExampleStack extends cdk.Stack {
+export class MultiTenantApiExampleStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const testFunction = new lambda.NodejsFunction(this, 'my-function');
+    const apiFunction = new lambda.NodejsFunction(this, 'api-function', {
+      functionName: 'multi-tenant-api-function',
+    });
 
     const accessLogsGroup = new logs.LogGroup(this, 'RestApiLogs', {
-      logGroupName: 'example-rest-api-access-logs',
+      logGroupName: 'multi-tenant-api-access-logs',
     });
 
     const api = new apigw.LambdaRestApi(this, 'RestApi', {
-      handler: testFunction,
+      handler: apiFunction,
       cloudWatchRole: true,
       proxy: false,
       deployOptions: {
         accessLogFormat: this.apiGatewayAccessLoggingFormat(),
         accessLogDestination: new apigw.LogGroupLogDestination(accessLogsGroup),
       },
+      endpointExportName: 'MultiTenantApiEndpoint',
     });
 
     this.createPerClientCountMetricFilter(accessLogsGroup);
@@ -70,39 +73,43 @@ export class MultiTenantApiGatewayExampleStack extends cdk.Stack {
       ],
     });
 
-    apiClients.forEach((apiClient) => {
-      const clientAccountPrincipals = apiClient.awsAccounts.map((acc) => new iam.AccountPrincipal(acc));
-      const role = new iam.Role(this, 'RestApiClient' + apiClient.name + 'Role', {
-        roleName: `rest-api-client-${apiClient.name}-role`,
-        assumedBy: new iam.CompositePrincipal(...clientAccountPrincipals),
-      });
-      role.attachInlinePolicy(allowInvokeApiPolicy);
+    apiClients.forEach((apiClient) => this.setupApiClient(allowInvokeApiPolicy, api, apiClient));
+  }
 
-      const plan = api.addUsagePlan('RestApiUsagePlan-' + apiClient.name, {
-        name: apiClient.name + '-plan',
-        throttle: {
-          rateLimit: apiClient.rateLimit,
-          burstLimit: apiClient.burstLimit,
-        },
-      });
-
-      plan.addApiStage({
-        stage: api.deploymentStage,
-      });
-
-      const key = api.addApiKey('ApiKey-' + apiClient.name, {
-        apiKeyName: `key-${apiClient.name}`,
-        value: `api-key-${apiClient.name}`,
-      });
-      plan.addApiKey(key);
+  private setupApiClient(allowInvokeApiPolicy: iam.Policy, api: apigw.RestApi, apiClient: ApiClientConfig) {
+    const clientAccountPrincipals = apiClient.awsAccounts.map((acc) => new iam.AccountPrincipal(acc));
+    const role = new iam.Role(this, 'MultiTenantApiClient-' + apiClient.name + '-Role', {
+      roleName: `MultiTenantApiClient-${apiClient.name}-role`,
+      assumedBy: new iam.CompositePrincipal(...clientAccountPrincipals),
     });
+    role.attachInlinePolicy(allowInvokeApiPolicy);
+
+    const plan = api.addUsagePlan('MultiTenantApiUsagePlan-' + apiClient.name, {
+      name: apiClient.name + '-plan',
+      throttle: {
+        rateLimit: apiClient.rateLimit,
+        burstLimit: apiClient.burstLimit,
+      },
+    });
+
+    plan.addApiStage({
+      stage: api.deploymentStage,
+    });
+
+    const key = api.addApiKey('MultiTenantApiKey-' + apiClient.name, {
+      apiKeyName: `key-${apiClient.name}`,
+      value: `api-key-${apiClient.name}`,
+    });
+    plan.addApiKey(key);
   }
 
   private createPerClientCountMetricFilter(accessLogsGroup: logs.LogGroup) {
-    new logs.MetricFilter(this, 'RestApiCountMetricFilter', {
+    const metricNamespace = 'MultiTenantApiMetricFilter';
+
+    new logs.MetricFilter(this, 'MultiTenantApiCountMetricFilter', {
       logGroup: accessLogsGroup,
       filterPattern: logs.FilterPattern.exists('$.userArn'),
-      metricNamespace: 'RestApiMetricFilter',
+      metricNamespace: metricNamespace,
       metricName: 'Count',
       metricValue: '1',
       unit: cloudwatch.Unit.COUNT,
@@ -113,10 +120,10 @@ export class MultiTenantApiGatewayExampleStack extends cdk.Stack {
       },
     });
 
-    new logs.MetricFilter(this, 'RestApiLatencyMetricFilter', {
+    new logs.MetricFilter(this, 'MultiTenantApiLatencyMetricFilter', {
       logGroup: accessLogsGroup,
       filterPattern: logs.FilterPattern.exists('$.userArn'),
-      metricNamespace: 'RestApiMetricFilter',
+      metricNamespace: metricNamespace,
       metricName: 'Latency',
       metricValue: '$.responseLatency',
       unit: cloudwatch.Unit.MILLISECONDS,
@@ -127,10 +134,10 @@ export class MultiTenantApiGatewayExampleStack extends cdk.Stack {
       },
     });
 
-    new logs.MetricFilter(this, 'RestApi4XXErrorMetricFilter', {
+    new logs.MetricFilter(this, 'MultiTenantApi4XXErrorMetricFilter', {
       logGroup: accessLogsGroup,
       filterPattern: logs.FilterPattern.literal('{ ($.status = 4**) && ($.userArn = "*") }'),
-      metricNamespace: 'RestApiMetricFilter',
+      metricNamespace: metricNamespace,
       metricName: '4XXError',
       metricValue: '1',
       unit: cloudwatch.Unit.COUNT,
@@ -141,10 +148,10 @@ export class MultiTenantApiGatewayExampleStack extends cdk.Stack {
       },
     });
 
-    new logs.MetricFilter(this, 'RestApi5XXErrorMetricFilter', {
+    new logs.MetricFilter(this, 'MultiTenantApi5XXErrorMetricFilter', {
       logGroup: accessLogsGroup,
       filterPattern: logs.FilterPattern.literal('{ ($.status = 5**) && ($.userArn = "*") }'),
-      metricNamespace: 'RestApiMetricFilter',
+      metricNamespace: metricNamespace,
       metricName: '5XXError',
       metricValue: '1',
       unit: cloudwatch.Unit.COUNT,
@@ -157,8 +164,10 @@ export class MultiTenantApiGatewayExampleStack extends cdk.Stack {
   }
 
   private createApiAccessLogProcessor(accessLogsGroup: logs.LogGroup) {
-    const logProcessingFunction = new lambda.NodejsFunction(this, 'log-processor-function');
-    new logs.SubscriptionFilter(this, 'LogSubscriptionFilter', {
+    const logProcessingFunction = new lambda.NodejsFunction(this, 'log-processor-function', {
+      functionName: 'multi-tenant-api-log-processor-function',
+    });
+    new logs.SubscriptionFilter(this, 'MultiTenantApiLogSubscriptionFilter', {
       logGroup: accessLogsGroup,
       destination: new logsd.LambdaDestination(logProcessingFunction),
       filterPattern: logs.FilterPattern.allEvents(),
