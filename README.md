@@ -3,6 +3,8 @@
 This project is an example implementation of multi-tenant API build with AWS CDK and Typescript created for
 blog post [Building multi-tenant internal services in AWS and CDK: Part 1 — API Gateway and App Sync](https://filippfediakov.medium.com/building-multi-tenant-internal-services-in-aws-and-cdk-part-1-api-gateway-and-app-sync-475d97faa1e7).
 
+![alt-text](https://miro.medium.com/v2/resize:fit:1100/format:webp/1*Pm1HCkuyyb4U5wEA9LCRpg.png)
+
 ## Deployment
 
 Prerequisites: 
