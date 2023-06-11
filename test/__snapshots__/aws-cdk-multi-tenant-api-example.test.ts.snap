@@ -195,6 +195,68 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
       },
       "Type": "AWS::ApiGateway::RestApi",
     },
+    "RestApi4XXErrorMetricFilter9745B720": {
+      "Properties": {
+        "FilterPattern": "{ ($.status = 4**) && ($.userArn = "*") }",
+        "LogGroupName": {
+          "Ref": "RestApiLogsF6F215CD",
+        },
+        "MetricTransformations": [
+          {
+            "Dimensions": [
+              {
+                "Key": "client",
+                "Value": "$.userArn",
+              },
+              {
+                "Key": "method",
+                "Value": "$.httpMethod",
+              },
+              {
+                "Key": "path",
+                "Value": "$.path",
+              },
+            ],
+            "MetricName": "4XXError",
+            "MetricNamespace": "RestApiMetricFilter",
+            "MetricValue": "1",
+            "Unit": "Count",
+          },
+        ],
+      },
+      "Type": "AWS::Logs::MetricFilter",
+    },
+    "RestApi5XXErrorMetricFilter08746CF7": {
+      "Properties": {
+        "FilterPattern": "{ ($.status = 5**) && ($.userArn = "*") }",
+        "LogGroupName": {
+          "Ref": "RestApiLogsF6F215CD",
+        },
+        "MetricTransformations": [
+          {
+            "Dimensions": [
+              {
+                "Key": "client",
+                "Value": "$.userArn",
+              },
+              {
+                "Key": "method",
+                "Value": "$.httpMethod",
+              },
+              {
+                "Key": "path",
+                "Value": "$.path",
+              },
+            ],
+            "MetricName": "5XXError",
+            "MetricNamespace": "RestApiMetricFilter",
+            "MetricValue": "1",
+            "Unit": "Count",
+          },
+        ],
+      },
+      "Type": "AWS::Logs::MetricFilter",
+    },
     "RestApiAccount7C83CF5A": {
       "DeletionPolicy": "Retain",
       "DependsOn": [
@@ -273,6 +335,37 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
       "Type": "AWS::IAM::Role",
       "UpdateReplacePolicy": "Retain",
     },
+    "RestApiCountMetricFilterF4480ECD": {
+      "Properties": {
+        "FilterPattern": "{ $.userArn = "*" }",
+        "LogGroupName": {
+          "Ref": "RestApiLogsF6F215CD",
+        },
+        "MetricTransformations": [
+          {
+            "Dimensions": [
+              {
+                "Key": "client",
+                "Value": "$.userArn",
+              },
+              {
+                "Key": "method",
+                "Value": "$.httpMethod",
+              },
+              {
+                "Key": "path",
+                "Value": "$.path",
+              },
+            ],
+            "MetricName": "Count",
+            "MetricNamespace": "RestApiMetricFilter",
+            "MetricValue": "1",
+            "Unit": "Count",
+          },
+        ],
+      },
+      "Type": "AWS::Logs::MetricFilter",
+    },
     "RestApiDeployment180EC503599bc867318d6e60be213ad921747dd1": {
       "DependsOn": [
         "RestApiitemsGET2AAECCB8",
@@ -309,6 +402,37 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
         "StageName": "prod",
       },
       "Type": "AWS::ApiGateway::Stage",
+    },
+    "RestApiLatencyMetricFilter5BECBDC1": {
+      "Properties": {
+        "FilterPattern": "{ $.userArn = "*" }",
+        "LogGroupName": {
+          "Ref": "RestApiLogsF6F215CD",
+        },
+        "MetricTransformations": [
+          {
+            "Dimensions": [
+              {
+                "Key": "client",
+                "Value": "$.userArn",
+              },
+              {
+                "Key": "method",
+                "Value": "$.httpMethod",
+              },
+              {
+                "Key": "path",
+                "Value": "$.path",
+              },
+            ],
+            "MetricName": "Latency",
+            "MetricNamespace": "RestApiMetricFilter",
+            "MetricValue": "$.responseLatency",
+            "Unit": "Milliseconds",
+          },
+        ],
+      },
+      "Type": "AWS::Logs::MetricFilter",
     },
     "RestApiLogsF6F215CD": {
       "DeletionPolicy": "Retain",
@@ -461,7 +585,7 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
           "S3Bucket": {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "440b64ebfc461325fbc66a997fbe3f70ad0c8f5a85e264763ceb22fce2f6fc8b.zip",
+          "S3Key": "a92c568fb8ea0d78ab85307154e6375b60c8d5e72c877b0d4e93c59c6412c2cd.zip",
         },
         "Environment": {
           "Variables": {

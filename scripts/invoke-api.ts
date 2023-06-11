@@ -63,25 +63,3 @@ const sendSampleRequest = async () => {
 };
 
 sendSampleRequest();
-
-// const signed = sign({
-//   method: 'GET',
-//   service: 'apigateway',
-//   region: region,
-//   host,
-//   headers: {
-//     'Content-Type': 'application/json',
-//   },
-// }) as SignedRequest;
-
-// axios({
-//   ...signed,
-//   url: apiGatewayInvokeUrl,
-//   data: { test: 'aws4 message' },
-// })
-//   .then((response) => {
-//     console.log(response);
-//   })
-//   .catch((error) => {
-//     console.error('Something went wrong: ', error);
-//   });

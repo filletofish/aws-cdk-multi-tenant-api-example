@@ -4,6 +4,7 @@ import * as apigw from 'aws-cdk-lib/aws-apigateway';
 import * as lambda from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
 
 interface Client {
   name: string;
@@ -13,6 +14,11 @@ interface Client {
 const apiClients: Client[] = [
   {
     name: 'payment-service',
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    awsAccounts: [process.env.CDK_DEFAULT_ACCOUNT!],
+  },
+  {
+    name: 'order-service',
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     awsAccounts: [process.env.CDK_DEFAULT_ACCOUNT!],
   },
@@ -38,6 +44,8 @@ export class MultiTenantApiGatewayExampleStack extends cdk.Stack {
       },
     });
 
+    this.createPerClientCountMetricFilter(accessLogsGroup);
+
     const resource = api.root.addResource('items');
     const getItemsMethod = resource.addMethod('GET', api.root.defaultIntegration, {
       authorizationType: apigw.AuthorizationType.IAM,
@@ -61,6 +69,64 @@ export class MultiTenantApiGatewayExampleStack extends cdk.Stack {
           ],
         })
       );
+    });
+  }
+
+  private createPerClientCountMetricFilter(accessLogsGroup: logs.LogGroup) {
+    new logs.MetricFilter(this, 'RestApiCountMetricFilter', {
+      logGroup: accessLogsGroup,
+      filterPattern: logs.FilterPattern.exists('$.userArn'),
+      metricNamespace: 'RestApiMetricFilter',
+      metricName: 'Count',
+      metricValue: '1',
+      unit: cloudwatch.Unit.COUNT,
+      dimensions: {
+        client: '$.userArn',
+        method: '$.httpMethod',
+        path: '$.path',
+      },
+    });
+
+    new logs.MetricFilter(this, 'RestApiLatencyMetricFilter', {
+      logGroup: accessLogsGroup,
+      filterPattern: logs.FilterPattern.exists('$.userArn'),
+      metricNamespace: 'RestApiMetricFilter',
+      metricName: 'Latency',
+      metricValue: '$.responseLatency',
+      unit: cloudwatch.Unit.MILLISECONDS,
+      dimensions: {
+        client: '$.userArn',
+        method: '$.httpMethod',
+        path: '$.path',
+      },
+    });
+
+    new logs.MetricFilter(this, 'RestApi4XXErrorMetricFilter', {
+      logGroup: accessLogsGroup,
+      filterPattern: logs.FilterPattern.literal('{ ($.status = 4**) && ($.userArn = "*") }'),
+      metricNamespace: 'RestApiMetricFilter',
+      metricName: '4XXError',
+      metricValue: '1',
+      unit: cloudwatch.Unit.COUNT,
+      dimensions: {
+        client: '$.userArn',
+        method: '$.httpMethod',
+        path: '$.path',
+      },
+    });
+
+    new logs.MetricFilter(this, 'RestApi5XXErrorMetricFilter', {
+      logGroup: accessLogsGroup,
+      filterPattern: logs.FilterPattern.literal('{ ($.status = 5**) && ($.userArn = "*") }'),
+      metricNamespace: 'RestApiMetricFilter',
+      metricName: '5XXError',
+      metricValue: '1',
+      unit: cloudwatch.Unit.COUNT,
+      dimensions: {
+        client: '$.userArn',
+        method: '$.httpMethod',
+        path: '$.path',
+      },
     });
   }
 
