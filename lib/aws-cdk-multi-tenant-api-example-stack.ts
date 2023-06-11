@@ -5,6 +5,7 @@ import * as lambda from 'aws-cdk-lib/aws-lambda-nodejs';
 import * as logs from 'aws-cdk-lib/aws-logs';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
+import * as logsd from 'aws-cdk-lib/aws-logs-destinations';
 
 interface Client {
   name: string;
@@ -45,10 +46,21 @@ export class MultiTenantApiGatewayExampleStack extends cdk.Stack {
     });
 
     this.createPerClientCountMetricFilter(accessLogsGroup);
+    this.createApiAccessLogProcessor(accessLogsGroup);
 
     const resource = api.root.addResource('items');
     const getItemsMethod = resource.addMethod('GET', api.root.defaultIntegration, {
       authorizationType: apigw.AuthorizationType.IAM,
+    });
+
+    const allowInvokeApiPolicy = new iam.Policy(this, 'AllowInvokeApi', {
+      statements: [
+        new iam.PolicyStatement({
+          actions: ['execute-api:Invoke'],
+          effect: iam.Effect.ALLOW,
+          resources: [getItemsMethod.methodArn],
+        }),
+      ],
     });
 
     apiClients.forEach((apiClient) => {
@@ -58,17 +70,7 @@ export class MultiTenantApiGatewayExampleStack extends cdk.Stack {
         assumedBy: new iam.CompositePrincipal(...clientAccountPrincipals),
       });
 
-      role.attachInlinePolicy(
-        new iam.Policy(this, 'AllowInvokeApi', {
-          statements: [
-            new iam.PolicyStatement({
-              actions: ['execute-api:Invoke'],
-              effect: iam.Effect.ALLOW,
-              resources: [getItemsMethod.methodArn],
-            }),
-          ],
-        })
-      );
+      role.attachInlinePolicy(allowInvokeApiPolicy);
     });
   }
 
@@ -127,6 +129,15 @@ export class MultiTenantApiGatewayExampleStack extends cdk.Stack {
         method: '$.httpMethod',
         path: '$.path',
       },
+    });
+  }
+
+  private createApiAccessLogProcessor(accessLogsGroup: logs.LogGroup) {
+    const logProcessingFunction = new lambda.NodejsFunction(this, 'log-processor-function');
+    new logs.SubscriptionFilter(this, 'LogSubscriptionFilter', {
+      logGroup: accessLogsGroup,
+      destination: new logsd.LambdaDestination(logProcessingFunction),
+      filterPattern: logs.FilterPattern.allEvents(),
     });
   }
 

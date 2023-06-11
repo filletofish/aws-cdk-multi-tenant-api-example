@@ -185,9 +185,49 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
           {
             "Ref": "RestApiClientpaymentserviceRole52B31700",
           },
+          {
+            "Ref": "RestApiClientorderserviceRole55737A55",
+          },
         ],
       },
       "Type": "AWS::IAM::Policy",
+    },
+    "LogSubscriptionFilter4C618026": {
+      "DependsOn": [
+        "LogSubscriptionFilterCanInvokeLambdaD601FB53",
+      ],
+      "Properties": {
+        "DestinationArn": {
+          "Fn::GetAtt": [
+            "logprocessorfunction886DCE96",
+            "Arn",
+          ],
+        },
+        "FilterPattern": "",
+        "LogGroupName": {
+          "Ref": "RestApiLogsF6F215CD",
+        },
+      },
+      "Type": "AWS::Logs::SubscriptionFilter",
+    },
+    "LogSubscriptionFilterCanInvokeLambdaD601FB53": {
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "logprocessorfunction886DCE96",
+            "Arn",
+          ],
+        },
+        "Principal": "logs.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "RestApiLogsF6F215CD",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
     },
     "RestApi0C43BF4B": {
       "Properties": {
@@ -272,6 +312,35 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
       },
       "Type": "AWS::ApiGateway::Account",
       "UpdateReplacePolicy": "Retain",
+    },
+    "RestApiClientorderserviceRole55737A55": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition",
+                      },
+                      ":iam::507426004734:root",
+                    ],
+                  ],
+                },
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "RoleName": "rest-api-client-order-service-role",
+      },
+      "Type": "AWS::IAM::Role",
     },
     "RestApiClientpaymentserviceRole52B31700": {
       "Properties": {
@@ -575,6 +644,72 @@ exports[`Multi Tenant Api Example Stack Matches Snapshot 1`] = `
         },
       },
       "Type": "AWS::Lambda::Permission",
+    },
+    "logprocessorfunction886DCE96": {
+      "DependsOn": [
+        "logprocessorfunctionServiceRole68C22A68",
+      ],
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "11bf43c82aff35a67cd09ccc2dcd622a484b4615bb40aff46dcb9e8d017721ba.zip",
+        },
+        "Environment": {
+          "Variables": {
+            "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
+          },
+        },
+        "Handler": "index.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "logprocessorfunctionServiceRole68C22A68",
+            "Arn",
+          ],
+        },
+        "Runtime": {
+          "Fn::FindInMap": [
+            "DefaultCrNodeVersionMap",
+            {
+              "Ref": "AWS::Region",
+            },
+            "value",
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "logprocessorfunctionServiceRole68C22A68": {
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
     },
     "myfunctionDF753486": {
       "DependsOn": [

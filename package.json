@@ -14,6 +14,9 @@
     "deploy": "cdk synth --quiet && cdk deploy --hotswap-fallback --require-approval never"
   },
   "devDependencies": {
+    "@aws-sdk/credential-provider-node": "3.350.0",
+    "@aws-sdk/signature-v4": "3.347.0",
+    "@aws-sdk/types": "3.347.0",
     "@types/aws-lambda": "^8.10.115",
     "@types/aws4": "^1.11.2",
     "@types/jest": "^29.4.0",
@@ -22,9 +25,6 @@
     "@typescript-eslint/parser": "^5.59.8",
     "aws-cdk": "2.78.0",
     "aws-sdk": "2.1395.0",
-    "@aws-sdk/signature-v4": "3.347.0",
-    "@aws-sdk/credential-provider-node": "3.350.0",
-    "@aws-sdk/types": "3.347.0",
     "cross-fetch": "3.1.6",
     "eslint": "^8.42.0",
     "eslint-config-prettier": "^8.8.0",
@@ -33,9 +33,11 @@
     "prettier": "^2.8.8",
     "ts-jest": "^29.0.5",
     "ts-node": "^10.9.1",
-    "typescript": "~4.9.5"
+    "typescript": "~4.9.5",
+    "zlib": "1.0.5"
   },
   "dependencies": {
+    "@aws-lambda-powertools/metrics": "^1.9.0",
     "aws-cdk-lib": "2.78.0",
     "constructs": "^10.0.0",
     "source-map-support": "^0.5.21"
